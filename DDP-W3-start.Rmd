@@ -1,0 +1,69 @@
+---
+title: "DDP Using Plotly"
+author: "Patrick Brooks"
+date: "4/15/2020"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(plotly)
+library(dplyr)
+
+```
+
+# Project Purpose
+
+The United States Centers for Disease Control (CDC) provides a simple CSV file 
+of reported [COVID-19](https://www.cdc.gov/coronavirus/2019-ncov/cases-updates/cases-in-us.html)  cases.  The data table contains the state, recorded cases, the state CDC page.  This exercise will use Leaflet to produce an interactive map of this data.  
+The code used in this exercise is based in part on a [Plotly Choropleth example](https://plotly.com/r/choropleth-maps/).  
+
+# Methodology
+The CDC data contains several US territories not covered by the Plotly map.  The CDC data was
+manually cleaned for expediency.  Also a two character code was added to the data file for
+Plotly to recognise the state data. 
+
+* A simple "Blues" pallet was used to color code the states based upon the reported cases.  
+* A hover varialbe was added and the user can mouse over a state and see cases and the State's CDC site.  
+* A legend was added for a macro understanding of the cases reported.  
+
+```{r CDC_Data, echo= FALSE}
+# Create Dataframe
+d_states = data.frame(readxl::read_xlsx("W3States Reporting Cases of COVID-19 to CDC.xlsx"))
+
+
+# Create hover text
+d_states$hover <- with(d_states, paste( Jurisdiction, '<br>', "Cases", Cases.Reported,'<br>',
+                        URL))
+# Make state borders white
+borders <- list(color = toRGB("red"))
+# Set up some mapping options
+map_options <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = FALSE,
+  lakecolor = toRGB('white')
+)
+
+l_us = plot_ly(z = ~d_states$Cases.Reported, text = ~d_states$hover, locations =
+        ~d_states$code, 
+        type = 'choropleth', locationmode = 'USA-states', 
+        color = d_states$Cases.Reported, colors = 'Blues', marker = list(line = borders)) %>%
+  layout(title = 'US COVID19 cases 04/10/2020', geo = map_options)
+
+l_us
+```
+
+# Summary & code listing
+
+This project demonstrates that creating simple interactive spacial maps can be accomplished
+with a a little creative effor.  Below is the code that generated the graphic.
+
+
+```{r code_inclusion, ref.label=knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```
+
+
